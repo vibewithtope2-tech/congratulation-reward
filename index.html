@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Congratulations!</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: #f1f2f4;
+            font-family: Arial, Helvetica, sans-serif;
+            color: #222;
+        }
+
+        /* =====================================
+           NOTIFICATION
+        ===================================== */
+
+        .notification {
+            position: fixed;
+            top: 15px;
+            left: 50%;
+
+            width: calc(100% - 30px);
+            max-width: 390px;
+
+            padding: 15px;
+
+            background: rgba(255, 255, 255, 0.98);
+
+            border-radius: 18px;
+
+            display: flex;
+            align-items: center;
+            gap: 12px;
+
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.25);
+
+            transform: translate(-50%, -180px);
+            transition: transform 0.5s ease;
+
+            cursor: pointer;
+
+            z-index: 10;
+        }
+
+        .notification.show {
+            transform: translate(-50%, 0);
+        }
+
+        .notification-icon {
+            width: 46px;
+            height: 46px;
+
+            background: #22a447;
+            color: white;
+
+            border-radius: 12px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-size: 23px;
+
+            flex-shrink: 0;
+        }
+
+        .notification-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .notification-title {
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        .notification-message {
+            color: #555;
+            font-size: 13px;
+            margin-top: 3px;
+            line-height: 1.3;
+        }
+
+        .notification-time {
+            color: #888;
+            font-size: 11px;
+            align-self: flex-start;
+        }
+
+
+        /* =====================================
+           GENERAL OVERLAY
+        ===================================== */
+
+        .overlay {
+            display: none;
+
+            position: fixed;
+            inset: 0;
+
+            background: rgba(0, 0, 0, 0.50);
+
+            align-items: center;
+            justify-content: center;
+
+            padding: 20px;
+
+            z-index: 20;
+        }
+
+
+        /* =====================================
+           REWARD POPUP
+        ===================================== */
+
+        .reward-popup {
+            width: 100%;
+            max-width: 360px;
+
+            background: white;
+
+            border-radius: 20px;
+
+            padding: 30px 25px;
+
+            text-align: center;
+
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+
+            animation: popupIn 0.3s ease;
+        }
+
+        .reward-icon {
+            font-size: 55px;
+        }
+
+        .reward-popup h1 {
+            color: #22a447;
+            margin: 8px 0 12px;
+            font-size: 26px;
+        }
+
+        .reward-popup p {
+            color: #555;
+            line-height: 1.5;
+            margin: 8px 0;
+        }
+
+        .amount {
+            font-size: 34px;
+            font-weight: bold;
+            color: #222;
+
+            margin: 16px 0;
+        }
+
+
+        /* =====================================
+           BUTTONS
+        ===================================== */
+
+        .green-button {
+            width: 100%;
+
+            padding: 14px;
+
+            border: none;
+            border-radius: 10px;
+
+            background: #22a447;
+            color: white;
+
+            font-size: 16px;
+            font-weight: bold;
+
+            cursor: pointer;
+
+            margin-top: 15px;
+        }
+
+        .green-button:active {
+            transform: scale(0.98);
+        }
+
+
+        /* =====================================
+           CLAIM PAGE
+        ===================================== */
+
+        .claim-page {
+            display: none;
+
+            min-height: 100vh;
+
+            align-items: center;
+            justify-content: center;
+
+            padding: 25px;
+        }
+
+        .claim-card {
+            width: 100%;
+            max-width: 390px;
+
+            background: white;
+
+            border-radius: 20px;
+
+            padding: 28px 24px;
+
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        .claim-icon {
+            width: 55px;
+            height: 55px;
+
+            margin: 0 auto 15px;
+
+            background: #22a447;
+            color: white;
+
+            border-radius: 15px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-size: 27px;
+        }
+
+        .claim-card h1 {
+            text-align: center;
+
+            margin: 5px 0;
+
+            font-size: 25px;
+        }
+
+        .subtitle {
+            text-align: center;
+
+            color: #666;
+
+            font-size: 14px;
+
+            line-height: 1.5;
+
+            margin: 8px 0 22px;
+        }
+
+
+        /* =====================================
+           REWARD BOX
+        ===================================== */
+
+        .reward-box {
+            background: #eefaf1;
+
+            border: 1px solid #c9ecd2;
+
+            border-radius: 12px;
+
+            padding: 14px;
+
+            text-align: center;
+
+            margin-bottom: 22px;
+        }
+
+        .reward-box small {
+            color: #666;
+        }
+
+        .reward-box strong {
+            display: block;
+
+            color: #168438;
+
+            font-size: 28px;
+
+            margin-top: 3px;
+        }
+
+
+        /* =====================================
+           FORM
+        ===================================== */
+
+        label {
+            display: block;
+
+            font-size: 14px;
+
+            font-weight: bold;
+
+            margin-bottom: 7px;
+        }
+
+        input {
+            width: 100%;
+
+            padding: 13px;
+
+            border: 1px solid #ccc;
+
+            border-radius: 9px;
+
+            font-size: 16px;
+
+            outline: none;
+
+            margin-bottom: 17px;
+        }
+
+        input:focus {
+            border-color: #22a447;
+        }
+
+        .fine-print {
+            text-align: center;
+
+            color: #888;
+
+            font-size: 11px;
+
+            line-height: 1.4;
+
+            margin-top: 15px;
+        }
+
+
+        /* =====================================
+           ERROR POPUP
+        ===================================== */
+
+        .error-overlay {
+            display: none;
+
+            position: fixed;
+
+            inset: 0;
+
+            background: rgba(0, 0, 0, 0.50);
+
+            align-items: center;
+
+            justify-content: center;
+
+            padding: 20px;
+
+            z-index: 100;
+        }
+
+        .error-popup {
+            width: 100%;
+
+            max-width: 340px;
+
+            background: white;
+
+            border-radius: 18px;
+
+            padding: 27px 24px;
+
+            text-align: center;
+
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+
+            animation: errorPop 0.25s ease;
+        }
+
+        .error-icon {
+            font-size: 48px;
+
+            margin-bottom: 5px;
+        }
+
+        .error-popup h2 {
+            margin: 5px 0 10px;
+
+            color: #d32f2f;
+
+            font-size: 21px;
+        }
+
+        .error-popup p {
+            color: #555;
+
+            font-size: 14px;
+
+            line-height: 1.5;
+
+            margin: 8px 0;
+        }
+
+        .error-button {
+            width: 100%;
+
+            padding: 13px;
+
+            margin-top: 12px;
+
+            border: none;
+
+            border-radius: 9px;
+
+            background: #d32f2f;
+
+            color: white;
+
+            font-size: 15px;
+
+            font-weight: bold;
+
+            cursor: pointer;
+        }
+
+
+        /* =====================================
+           ANIMATIONS
+        ===================================== */
+
+        @keyframes popupIn {
+            from {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes errorPop {
+            from {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+
+<body>
+
+
+    <!-- =====================================
+         STEP 1: NOTIFICATION
+    ===================================== -->
+
+    <div
+        class="notification"
+        id="notification"
+    >
+
+        <div class="notification-icon">
+            🎉
+        </div>
+
+        <div class="notification-content">
+
+            <div class="notification-title">
+                Congratulations!
+            </div>
+
+            <div class="notification-message">
+                You have been selected to receive ₱500.
+            </div>
+
+        </div>
+
+        <div class="notification-time">
+            now
+        </div>
+
+    </div>
+
+
+
+    <!-- =====================================
+         STEP 2: REWARD POPUP
+    ===================================== -->
+
+    <div
+        class="overlay"
+        id="rewardOverlay"
+    >
+
+        <div class="reward-popup">
+
+            <div class="reward-icon">
+                🎉
+            </div>
+
+            <h1>
+                Congratulations!
+            </h1>
+
+            <p>
+                You have been selected to receive
+            </p>
+
+            <div class="amount">
+                ₱500
+            </div>
+
+            <p>
+                Your reward is ready to be claimed.
+            </p>
+
+            <button
+                class="green-button"
+                id="proceedButton"
+                type="button"
+            >
+                PROCEED
+            </button>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =====================================
+         STEP 3: CLAIM FORM
+    ===================================== -->
+
+    <div
+        class="claim-page"
+        id="claimPage"
+    >
+
+        <div class="claim-card">
+
+            <div class="claim-icon">
+                🎁
+            </div>
+
+            <h1>
+                Claim Your Reward
+            </h1>
+
+            <div class="subtitle">
+                Complete the information below to
+                continue with your reward claim.
+            </div>
+
+
+            <div class="reward-box">
+
+                <small>
+                    Reward Amount
+                </small>
+
+                <strong>
+                    ₱500
+                </strong>
+
+            </div>
+
+
+            <form id="claimForm">
+
+                <label for="name">
+                    Full Name
+                </label>
+
+                <input
+                    id="name"
+                    type="text"
+                    placeholder="Enter your full name"
+                    required
+                >
+
+
+                <label for="email">
+                    Email Address
+                </label>
+
+                <input
+                    id="email"
+                    type="email"
+                    placeholder="Enter your email address"
+                    required
+                >
+
+
+                <label for="mobile">
+                    Mobile Number
+                </label>
+
+                <input
+                    id="mobile"
+                    type="tel"
+                    placeholder="Enter your mobile number"
+                    required
+                >
+
+
+                <button
+                    class="green-button"
+                    type="submit"
+                >
+                    CLAIM ₱500
+                </button>
+
+            </form>
+
+
+            <div class="fine-print">
+                Reward verification may take a few minutes.
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =====================================
+         STEP 4: ERROR POPUP
+    ===================================== -->
+
+    <div
+        class="error-overlay"
+        id="errorOverlay"
+    >
+
+        <div class="error-popup">
+
+            <div class="error-icon">
+                ⚠️
+            </div>
+
+            <h2>
+                Unable to Process
+            </h2>
+
+            <p>
+                We couldn't complete your reward
+                claim at this time.
+            </p>
+
+            <p>
+                Please check your information
+                and try again.
+            </p>
+
+            <button
+                class="error-button"
+                id="errorButton"
+                type="button"
+            >
+                OK
+            </button>
+
+        </div>
+
+    </div>
+
+
+
+    <script>
+
+        /*
+         * STEP 1
+         * Show reward notification shortly
+         * after the page opens.
+         */
+
+        const notification =
+            document.getElementById("notification");
+
+        const rewardOverlay =
+            document.getElementById("rewardOverlay");
+
+        const proceedButton =
+            document.getElementById("proceedButton");
+
+        const claimPage =
+            document.getElementById("claimPage");
+
+        const claimForm =
+            document.getElementById("claimForm");
+
+        const errorOverlay =
+            document.getElementById("errorOverlay");
+
+        const errorButton =
+            document.getElementById("errorButton");
+
+
+        setTimeout(function () {
+
+            notification.classList.add("show");
+
+        }, 700);
+
+
+
+        /*
+         * STEP 2
+         * Clicking the notification opens
+         * the reward popup.
+         */
+
+        notification.addEventListener(
+            "click",
+            function () {
+
+                rewardOverlay.style.display = "flex";
+
+                notification.classList.remove("show");
+
+            }
+        );
+
+
+
+        /*
+         * STEP 3
+         * PROCEED opens the claim form.
+         */
+
+        proceedButton.addEventListener(
+            "click",
+            function () {
+
+                rewardOverlay.style.display = "none";
+
+                claimPage.style.display = "flex";
+
+            }
+        );
+
+
+
+        /*
+         * STEP 4
+         * Submit does NOT send anything.
+         *
+         * It simply shows the fictional
+         * error popup for the short film.
+         */
+
+        claimForm.addEventListener(
+            "submit",
+            function (event) {
+
+                event.preventDefault();
+
+                errorOverlay.style.display = "flex";
+
+            }
+        );
+
+
+
+        /*
+         * Close the error popup.
+         */
+
+        errorButton.addEventListener(
+            "click",
+            function () {
+
+                errorOverlay.style.display = "none";
+
+            }
+        );
+
+    </script>
+
+</body>
+</html>
